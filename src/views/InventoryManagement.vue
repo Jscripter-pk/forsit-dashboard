@@ -7,6 +7,38 @@
         placeholder="Search products..."
         class="search-input"
       />
+      <div class="filter-dropdown-wrapper" @click.stop>
+        <button class="filter-dropdown-btn" @click="showFilters = !showFilters">
+          <svg class="filter-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M6 10h8M9 15h2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Filters</span>
+        </button>
+        <div v-if="showFilters" class="filter-dropdown-menu">
+          <label class="filter-label">Category</label>
+          <select v-model="store.selectedCategory" class="category-select">
+            <option value="">All Categories</option>
+            <option v-for="cat in store.categories" :key="cat" :value="cat">{{ cat }}</option>
+          </select>
+          <label class="filter-label">Min price</label>
+          <BaseInput
+            v-model="store.filterMinPrice"
+            type="number"
+            min="0"
+            placeholder="Min price"
+            class="price-input"
+          />
+          <label class="filter-label">Max price</label>
+          <BaseInput
+            v-model="store.filterMaxPrice"
+            type="number"
+            min="0"
+            placeholder="Max price"
+            class="price-input"
+          />
+          <label class="filter-checkbox-label">
+            <input type="checkbox" v-model="store.filterInStock" /> In stock
+          </label>
+        </div>
+      </div>
     </div>
 
     <template v-if="!isMobile">
@@ -144,18 +176,25 @@ import BaseAlert from '../components/BaseAlert.vue'
 
 const store = useMainStore()
 const isMobile = ref(false)
+const showFilters = ref(false)
 
 function handleResize() {
   isMobile.value = window.innerWidth <= 900
 }
 
+function closeFilters(e) {
+  showFilters.value = false
+}
+
 onMounted(() => {
   handleResize()
   window.addEventListener('resize', handleResize)
+  window.addEventListener('click', closeFilters)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  window.removeEventListener('click', closeFilters)
 })
 
 store.filteredProducts.forEach(product => {
@@ -214,6 +253,7 @@ function formatNumber(value, format = '0,0') {
     gap: 1.2rem;
     margin-bottom: 1.5rem;
     justify-content: flex-end;
+    flex-wrap: wrap;
 }
 
 .search-input {
@@ -230,6 +270,73 @@ function formatNumber(value, format = '0,0') {
     border: 1.5px solid #111;
     outline: none;
     background: #fff;
+}
+
+.filter-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #181818;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.45rem 1.2rem;
+  font-size: 1.08rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  letter-spacing: 0.2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.filter-dropdown-btn:hover {
+  background: #111;
+}
+.filter-icon {
+  display: inline-block;
+  margin-right: 0.2rem;
+  vertical-align: middle;
+}
+
+.filter-dropdown-menu {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  min-width: 220px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  padding: 1.2rem 1.2rem 1rem 1.2rem;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.filter-label {
+  font-size: 1.01rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 0.2rem;
+}
+
+.filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 1.01rem;
+  color: #222;
+  gap: 0.3rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.filter-dropdown-menu .category-select,
+.filter-dropdown-menu .price-input {
+  margin-bottom: 0.5rem;
 }
 
 .inventory-table {
@@ -485,6 +592,14 @@ function formatNumber(value, format = '0,0') {
   .inventory-list {
     display: flex;
     padding-bottom: 3.8rem;
+  }
+}
+@media (max-width: 700px) {
+  .filter-dropdown-menu {
+    right: auto;
+    left: 0;
+    min-width: 180px;
+    padding: 1rem 0.7rem 0.7rem 0.7rem;
   }
 }
 </style>

@@ -29,6 +29,9 @@ export const useMainStore = defineStore('main', {
       search: '',
       sortBy: 'name',
       sortAsc: true,
+      filterMinPrice: '',
+      filterMaxPrice: '',
+      filterInStock: false,
     };
   },
   getters: {
@@ -48,6 +51,18 @@ export const useMainStore = defineStore('main', {
           p.name.toLowerCase().includes(state.search.toLowerCase()) ||
           p.description.toLowerCase().includes(state.search.toLowerCase())
         )
+      }
+      // Advanced filters (fix: always use parseFloat and check for null/empty string)
+      const min = state.filterMinPrice !== '' && state.filterMinPrice !== null ? parseFloat(state.filterMinPrice) : null
+      const max = state.filterMaxPrice !== '' && state.filterMaxPrice !== null ? parseFloat(state.filterMaxPrice) : null
+      if (min !== null && !isNaN(min)) {
+        list = list.filter(p => parseFloat(p.price) >= min)
+      }
+      if (max !== null && !isNaN(max)) {
+        list = list.filter(p => parseFloat(p.price) <= max)
+      }
+      if (state.filterInStock) {
+        list = list.filter(p => p.stock > 0)
       }
       list = list.sort((a, b) => {
         if (state.sortBy === 'name') return state.sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
